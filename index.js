@@ -53,6 +53,41 @@ app.get('/api/sessions/:user_id', async (req, res) => {
   }
 });
 
+app.get('/api/profile/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user_id)
+      .maybeSingle();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ profile: data || null });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/profile/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { full_name, age, sex, height_cm, weight_kg, fitness_level, main_goal, injuries } = req.body;
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert({
+        id: user_id,
+        full_name, age, sex, height_cm, weight_kg, fitness_level, main_goal, injuries,
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ profile: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`FormGhost backend running on port ${PORT}`);
