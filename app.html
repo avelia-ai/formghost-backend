@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FormGhost — Connexion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --ink:#0E0E0E;
+  --panel:#1A1A1A;
+  --line:rgba(255,255,255,0.12);
+  --volt:#D6FF3D;
+  --white:#F5F5F2;
+  --gray:#9A9A93;
+  --danger:#FF6B5C;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--ink);color:var(--white);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+}
+.mono{font-family:'IBM Plex Mono',monospace}
+.display{font-family:'Anton',sans-serif;text-transform:uppercase}
+#authPage{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:24px;
+}
+#authPage.hidden{display:none}
+.auth-card{
+  width:100%;max-width:400px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  padding:36px 30px;
+}
+.auth-logo{display:flex;align-items:center;gap:10px;font-family:'Anton';font-size:22px;margin-bottom:6px}
+.auth-sub{color:var(--gray);font-size:13px;margin-bottom:28px}
+.auth-tabs{display:flex;border:1px solid var(--line);margin-bottom:24px}
+.auth-tab{
+  flex:1;padding:11px;text-align:center;cursor:pointer;
+  font-family:'Anton';font-size:13px;letter-spacing:0.02em;
+  color:var(--gray);background:transparent;border:none;
+}
+.auth-tab.active{background:var(--volt);color:var(--ink)}
+.form-label{
+  font-family:'IBM Plex Mono';font-size:11px;color:var(--gray);
+  text-transform:uppercase;letter-spacing:0.05em;
+  display:block;margin-bottom:6px;
+}
+.form-input{
+  width:100%;background:var(--ink);border:1px solid var(--line);
+  color:var(--white);padding:12px 14px;font-size:14px;
+  font-family:'Inter';margin-bottom:16px;
+}
+.form-input:focus{outline:none;border-color:var(--volt)}
+.btn-submit{
+  width:100%;background:var(--volt);color:var(--ink);
+  border:none;padding:14px;font-family:'Anton';font-size:15px;
+  cursor:pointer;letter-spacing:0.02em;
+}
+.btn-submit:disabled{opacity:0.5;cursor:default}
+.auth-error{
+  background:rgba(255,107,92,0.12);border:1px solid var(--danger);
+  color:var(--danger);font-size:13px;padding:10px 12px;
+  margin-bottom:16px;display:none;
+}
+.auth-error.show{display:block}
+.auth-success{
+  background:rgba(214,255,61,0.1);border:1px solid var(--volt);
+  color:var(--volt);font-size:13px;padding:10px 12px;
+  margin-bottom:16px;display:none;
+}
+.auth-success.show{display:block}
+.form-group{display:none}
+.form-group.active{display:block}
+#appPage{display:none;min-height:100vh}
+#appPage.active{display:block}
+.app-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 6vw;border-bottom:1px solid var(--line);
+}
+.app-logo{font-family:'Anton';font-size:18px}
+.btn-logout{
+  background:transparent;border:1px solid var(--line);color:var(--gray);
+  font-family:'IBM Plex Mono';font-size:12px;padding:8px 16px;cursor:pointer;
+}
+.btn-logout:hover{color:var(--white);border-color:var(--white)}
+.capture-shell{
+  padding:60px 6vw;max-width:600px;margin:0 auto;text-align:center;
+}
+.capture-shell h1{font-family:'Anton';font-size:clamp(28px,4vw,40px);margin-bottom:14px}
+.capture-shell p{color:var(--gray);font-size:15px;margin-bottom:36px}
+.camera-frame{
+  aspect-ratio:3/4;max-width:340px;margin:0 auto 24px;
+  background:var(--panel);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.camera-frame .tag{
+  position:absolute;top:14px;left:14px;font-family:'IBM Plex Mono';
+  font-size:10px;color:var(--gray);
+}
+.camera-icon{width:56px;height:56px;color:var(--gray)}
+.soon-badge{
+  display:inline-block;font-family:'IBM Plex Mono';font-size:11px;
+  color:var(--volt);border:1px solid var(--volt);padding:6px 14px;
+}
+</style>
+</head>
+<body>
+
+<div id="authPage">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg width="20" height="24" viewBox="0 0 22 26" fill="none">
+        <circle cx="11" cy="7" r="5" stroke="#F5F5F2" stroke-width="1.8"/>
+        <path d="M11 12v8" stroke="#F5F5F2" stroke-width="1.8"/>
+        <path d="M11 14l-5 3" stroke="#F5F5F2" stroke-width="1.8"/>
+        <path d="M11 14l5 3" stroke="#F5F5F2" stroke-width="1.8"/>
+        <path d="M11 20l-3 5" stroke="#F5F5F2" stroke-width="1.8"/>
+        <path d="M11 20l3 5" stroke="#F5F5F2" stroke-width="1.8"/>
+      </svg>
+      FORMGHOST
+    </div>
+    <div class="auth-sub">Ton coach IA voit chaque angle</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Connexion</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Inscription</button>
+    </div>
+
+    <div id="authError" class="auth-error"></div>
+    <div id="authSuccess" class="auth-success"></div>
+
+    <div id="loginForm" class="form-group active">
+      <label class="form-label">Email</label>
+      <input type="email" class="form-input" id="loginEmail" placeholder="toi@email.com">
+      <label class="form-label">Mot de passe</label>
+      <input type="password" class="form-input" id="loginPassword" placeholder="••••••••">
+      <button class="btn-submit" onclick="login()" id="loginBtn">Se connecter</button>
+    </div>
+
+    <div id="registerForm" class="form-group">
+      <label class="form-label">Nom</label>
+      <input type="text" class="form-input" id="registerName" placeholder="Ton prénom">
+      <label class="form-label">Email</label>
+      <input type="email" class="form-input" id="registerEmail" placeholder="toi@email.com">
+      <label class="form-label">Mot de passe</label>
+      <input type="password" class="form-input" id="registerPassword" placeholder="Minimum 6 caractères">
+      <button class="btn-submit" onclick="register()" id="registerBtn">Créer mon compte</button>
+    </div>
+  </div>
+</div>
+
+<div id="appPage">
+  <div class="app-nav">
+    <div class="app-logo">FORMGHOST</div>
+    <button class="btn-logout" onclick="logout()">Déconnexion</button>
+  </div>
+  <div class="capture-shell">
+    <div class="soon-badge">BÊTA — CAPTURE BIENTÔT DISPONIBLE</div>
+    <h1 style="margin-top:20px">Prêt pour ton premier scan</h1>
+    <p>La détection de pose en direct arrive dans la prochaine mise à jour. Ton compte est prêt.</p>
+    <div class="camera-frame">
+      <div class="tag">FORMGHOST_SCAN.001</div>
+      <svg class="camera-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://vbzeklhhdagsoxjxazsl.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiemVrbGhoZGFnc294anhhenNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMDQxNDQsImV4cCI6MjA5NjY4MDE0NH0.izZr6ByPmyNfg9YXSrUzaT1goyf7d8mNV_OHjPjFLf0';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function switchTab(tab) {
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+  document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+  hideMessages();
+}
+
+function hideMessages() {
+  document.getElementById('authError').classList.remove('show');
+  document.getElementById('authSuccess').classList.remove('show');
+}
+
+function showError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.classList.add('show');
+  document.getElementById('authSuccess').classList.remove('show');
+}
+
+function showSuccess(msg) {
+  const el = document.getElementById('authSuccess');
+  el.textContent = msg;
+  el.classList.add('show');
+  document.getElementById('authError').classList.remove('show');
+}
+
+async function register() {
+  hideMessages();
+  const name = document.getElementById('registerName').value.trim();
+  const email = document.getElementById('registerEmail').value.trim();
+  const password = document.getElementById('registerPassword').value;
+  if (!name || !email || !password) return showError('Remplis tous les champs.');
+  if (password.length < 6) return showError('Le mot de passe doit faire au moins 6 caractères.');
+
+  const btn = document.getElementById('registerBtn');
+  btn.disabled = true;
+  btn.textContent = 'Création...';
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email, password,
+    options: { data: { full_name: name } }
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Créer mon compte';
+
+  if (error) return showError(error.message);
+  showSuccess('Compte créé. Connecte-toi maintenant.');
+  switchTab('login');
+}
+
+async function login() {
+  hideMessages();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) return showError('Remplis tous les champs.');
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.textContent = 'Connexion...';
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+  btn.disabled = false;
+  btn.textContent = 'Se connecter';
+
+  if (error) return showError(error.message);
+  showApp();
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  document.getElementById('appPage').classList.remove('active');
+  document.getElementById('authPage').classList.remove('hidden');
+}
+
+function showApp() {
+  document.getElementById('authPage').classList.add('hidden');
+  document.getElementById('appPage').classList.add('active');
+}
+
+async function checkSession() {
+  const { data } = await supabaseClient.auth.getSession();
+  if (data.session) showApp();
+}
+
+checkSession();
+</script>
+
+</body>
+</html>
