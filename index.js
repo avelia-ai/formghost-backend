@@ -12,6 +12,14 @@ const supabase = createClient(
   process.env.SUPABASE_SECRET_KEY
 );
 
+const Anthropic = require('@anthropic-ai/sdk');
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+function detectMediaType(buffer) {
+  if (buffer[0] === 0x89 && buffer[1] === 0x50) return 'image/png';
+  return 'image/jpeg';
+}
+
 app.get('/', (req, res) => {
   res.json({ status: 'FormGhost backend is running' });
 });
@@ -116,6 +124,63 @@ app.get('/api/progress-photos/:user_id', async (req, res) => {
       .order('created_at', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
     res.json({ photos: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/analyze-progress', async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    if (!user_id) return res.status(400).json({ error: 'user_id requis' });
+
+    const { data: photos, error: photosErr } = await supabase
+      .from('progress_photos')
+      .select('*')
+      .eq('user_id', user_id)
+      .order('created_at', { ascending: false });
+    if (photosErr) return res.status(500).json({ error: photosErr.message });
+
+    const before = photos.find(function(p) { return p.photo_type === 'before'; });
+    const after = photos.find(function(p) { return p.photo_type === 'after'; });
+    if (!before || !after) {
+      return res.status(400).json({ error: 'Il faut une photo avant et une photo apres pour lancer l\'analyse' });
+    }
+
+    const { data: beforeFile, error: beforeErr } = await supabase.storage.from('progress-photos').download(before.storage_path);
+    if (beforeErr) return res.status(500).json({ error: beforeErr.message });
+    const { data: afterFile, error: afterErr } = await supabase.storage.from('progress-photos').download(after.storage_path);
+    if (afterErr) return res.status(500).json({ error: afterErr.message });
+
+    const beforeBuffer = Buffer.from(await beforeFile.arrayBuffer());
+    const afterBuffer = Buffer.from(await afterFile.arrayBuffer());
+
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-5',
+      max_tokens: 1200,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: 'Voici deux photos corporelles de la meme personne, "avant" et "apres" un programme sportif. Analyse les changements visibles de facon factuelle et bienveillante. Precise explicitement que ce sont des estimations visuelles approximatives, pas des mesures cliniques. Reponds UNIQUEMENT avec un objet JSON valide, sans texte autour ni balises markdown, avec exactement cette structure: {"fat_percentage_estimate":"fourchette approximative, ex 15-18%","muscle_mass_estimate":"evolution qualitative, ex leger gain visible","physical_age_estimate":"fourchette d\'age approx, ex 25-28 ans","symmetry":"bon, moyen ou a travailler","balance":"bon, moyen ou a travailler","strengths":["point fort 1","point fort 2"],"weaknesses":["point a travailler 1"],"summary":"description factuelle en 2 a 3 phrases des changements visibles entre les deux photos"}'
+          },
+          { type: 'image', source: { type: 'base64', media_type: detectMediaType(beforeBuffer), data: beforeBuffer.toString('base64') } },
+          { type: 'image', source: { type: 'base64', media_type: detectMediaType(afterBuffer), data: afterBuffer.toString('base64') } }
+        ]
+      }]
+    });
+
+    const textBlock = message.content.find(function(c) { return c.type === 'text'; });
+    const rawText = textBlock ? textBlock.text : '{}';
+    let analysis;
+    try {
+      analysis = JSON.parse(rawText.replace(/```json|```/g, '').trim());
+    } catch (e) {
+      analysis = { summary: rawText };
+    }
+
+    res.json({ analysis: analysis });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

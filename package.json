@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/avelia-ai/formghost-backend#readme",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.112.2",
     "@supabase/supabase-js": "^2.108.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
