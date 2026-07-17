@@ -88,6 +88,39 @@ app.put('/api/profile/:user_id', async (req, res) => {
   }
 });
 
+app.post('/api/progress-photos', async (req, res) => {
+  try {
+    const { user_id, photo_type, storage_path } = req.body;
+    if (!user_id || !photo_type || !storage_path) {
+      return res.status(400).json({ error: 'user_id, photo_type et storage_path sont requis' });
+    }
+    const { data, error } = await supabase
+      .from('progress_photos')
+      .insert({ user_id, photo_type, storage_path })
+      .select()
+      .single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ photo: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/progress-photos/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { data, error } = await supabase
+      .from('progress_photos')
+      .select('*')
+      .eq('user_id', user_id)
+      .order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ photos: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`FormGhost backend running on port ${PORT}`);

@@ -531,9 +531,9 @@ async function loadProfileView() {
 
     document.getElementById('statTotal').textContent = sessions.length;
 
-    const scored = sessions.filter(function(s) { return typeof s.score === 'number'; });
+    const scored = sessions.filter(function(s) { return typeof s.global_score === 'number'; });
     if (scored.length > 0) {
-      const avg = scored.reduce(function(sum, s) { return sum + s.score; }, 0) / scored.length;
+      const avg = scored.reduce(function(sum, s) { return sum + s.global_score; }, 0) / scored.length;
       document.getElementById('statAvg').textContent = Math.round(avg) + '%';
     } else {
       document.getElementById('statAvg').textContent = '—';
@@ -545,8 +545,8 @@ async function loadProfileView() {
     } else {
       listEl.innerHTML = sessions.slice(0, 5).map(function(s) {
         const date = new Date(s.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-        const scoreLabel = typeof s.score === 'number' ? s.score + '%' : '—';
-        return '<div class="session-row"><div><div class="session-ex">' + s.exercise + '</div><div class="session-date">' + date + '</div></div><div class="session-score">' + scoreLabel + '</div></div>';
+        const scoreLabel = typeof s.global_score === 'number' ? s.global_score + '%' : '—';
+        return '<div class="session-row"><div><div class="session-ex">' + s.movement + '</div><div class="session-date">' + date + '</div></div><div class="session-score">' + scoreLabel + '</div></div>';
       }).join('');
     }
   } catch (err) {
