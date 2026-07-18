@@ -211,7 +211,7 @@ app.post('/api/generate-program', async (req, res) => {
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-5',
-      max_tokens: 4000,
+      max_tokens: 8000,
       messages: [{
         role: 'user',
         content: [{
@@ -227,6 +227,10 @@ app.post('/api/generate-program', async (req, res) => {
     try {
       programJson = JSON.parse(rawText.replace(/```json|```/g, '').trim());
     } catch (e) {
+      console.error('JSON parse error:', e.message);
+      console.error('rawText length:', rawText.length);
+      console.error('stop_reason:', message.stop_reason);
+      console.error('last 300 chars:', rawText.slice(-300));
       programJson = { general_advice: rawText };
     }
 
