@@ -211,7 +211,7 @@ app.post('/api/generate-program', async (req, res) => {
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-5',
-      max_tokens: 2000,
+      max_tokens: 4000,
       messages: [{
         role: 'user',
         content: [{
